@@ -1,0 +1,6 @@
+/node_modules
+.DS_Store
+/temporary/test.txt
+/temporary/temp.txt
+/temporary/temp1.txt
+/content/big.txt
