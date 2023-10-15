@@ -1,6 +1,11 @@
-node_modules/
 fileA.txt
 fileB.txt
 output.txt
 temp1.txt
 big.txt
+/node_modules
+.DS_Store
+/temporary/test.txt
+/temporary/temp.txt
+/temporary/temp1.txt
+/content/big.txt

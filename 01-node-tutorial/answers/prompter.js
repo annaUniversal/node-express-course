@@ -43,7 +43,7 @@ const form = () => {
   </body>
   `;
 };
-
+//
 /*const displayResult =() => {
 res.end(`
   Location: "/result"
@@ -97,6 +97,10 @@ const server = http.createServer((req, res) => {
     } */
     res.end(form());
   }
+});
+
+server.on("request", (req) => {
+  console.log("event received: ", req.method, req.url);
 });
 
 let PORT = 3000;
