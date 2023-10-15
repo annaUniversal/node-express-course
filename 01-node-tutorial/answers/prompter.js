@@ -70,8 +70,9 @@ const server = http.createServer((req, res) => {
           text = body.text;
           result = body.num1*body.num2;
         } else {
-          
+          text = "Both should be numbers";
         }
+        text = body.text;
       }
 
       if (body["text"]) {
