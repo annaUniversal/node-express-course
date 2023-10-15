@@ -1,3 +1,8 @@
+fileA.txt
+fileB.txt
+output.txt
+temp1.txt
+big.txt
 /node_modules
 .DS_Store
 /temporary/test.txt
