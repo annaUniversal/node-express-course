@@ -6,13 +6,45 @@ const { products, people } = require("./data");
 const { time } = require("console");
 const logger = require("./logger");
 const peopleRouter = require("./routes/people.js");
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
 
+app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(express.static("./public"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 //routers
 app.use("/", logger); // For all routs
 app.use("/api/v1/people", peopleRouter);
+
+const auth = (req, res, next) => {
+  if (req.cookies.name) {
+    req.user = req.cookies.name;
+    next();
+  } else {
+    return res.status(401).json({ message: "That user is unauthotized." });
+  }
+};
+
+app.post("/logon", (req, res) => {
+  const name = req.body.name;
+  if (name) {
+    res.cookie("name", name);
+    return res.status(201).json({ message: `Hello, ${name}` });
+  }
+  return res.status(400).json({ message: "Provide a name" });
+});
+
+app.delete("/logoff", (req, res) => {
+  res.clearCookie("name");
+  return res.status(200).json({ message: `You were logged out` });
+});
+
+app.get("/test", auth, (req, res) => {
+  const name = req.user; // Set it in the auth middleware
+  return res.status(200).json({ message: `Welcome, ${name}` });
+});
 
 app.get("/api/v1/test", (req, res) => {
   //res.status(200).json({ message: "It worked!"})
