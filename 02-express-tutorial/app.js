@@ -1,65 +1,121 @@
-console.log('Express Tutorial');
+console.log("Express Tutorial");
 const express = require("express");
 const path = require("path");
 const app = express();
-const { products } = require("./data");
+const { products, people } = require("./data");
+const { time } = require("console");
+const logger = require("./logger");
+const peopleRouter = require("./routes/people.js");
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
 
+app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(express.static("./public"));
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+//routers
+app.use("/", logger); // For all routs
+app.use("/api/v1/people", peopleRouter);
 
-app.get(('/api/v1/test'), (req, res) => {
-    //res.status(200).json({ message: "It worked!"})
-    res.json({ message: "It worked!" });
+const auth = (req, res, next) => {
+  if (req.cookies.name) {
+    req.user = req.cookies.name;
+    next();
+  } else {
+    return res.status(401).json({ message: "That user is unauthotized." });
+  }
+};
 
+app.post("/logon", (req, res) => {
+  const name = req.body.name;
+  if (name) {
+    res.cookie("name", name);
+    return res.status(201).json({ message: `Hello, ${name}` });
+  }
+  return res.status(400).json({ message: "Provide a name" });
 });
 
-app.get(('/api/v1/products'), (req, res) => {
-    console.log('Get request for Products')
-    //return res.status(200).json('<h1>Products</h1>')
-
-    const newProduct = products.map((product) => {
-        return {...product}      
-    })
-    res.json(newProduct)
+app.delete("/logoff", (req, res) => {
+  res.clearCookie("name");
+  return res.status(200).json({ message: `You were logged out` });
 });
 
-app.get(('/api/v1/products/:productID'), (req, res) => {
-    console.log(req.params);
-    const idToFind = parseInt(req.params.productID); 
-    const foundProduct = products.find((product) => product.id === idToFind);
-    if (!foundProduct){
-        return res.json({ message: "That product was not found."});
-    }
-    return res.json(foundProduct)
-})
+app.get("/test", auth, (req, res) => {
+  const name = req.user; // Set it in the auth middleware
+  return res.status(200).json({ message: `Welcome, ${name}` });
+});
 
-app.get(('/api/v1/query'), (req, res) => {
-    console.log(req.query)
-    const {search, limit, priceP} = req.query
-    let searchItems  = [...products]
+app.get("/api/v1/test", (req, res) => {
+  //res.status(200).json({ message: "It worked!"})
+  res.json({ message: "It worked!" });
+});
 
-    if(search){
-        searchItems = searchItems.filter((product) => {
-            return product.name.startsWith(search)
-        })
-    }
+app.get("/api/v1/products", (req, res) => {
+  console.log("Get request for Products");
+  const newProduct = products.map((product) => {
+    return { ...product };
+  });
+  res.json(newProduct);
+});
 
-    if (limit) {
-        searchItems = searchItems.slice(0,Number(limit))
-    }
+app.get("/api/v1/products/:productID", (req, res) => {
+  console.log(req.params);
+  const idToFind = parseInt(req.params.productID);
+  const foundProduct = products.find((product) => product.id === idToFind);
+  if (!foundProduct) {
+    return res.json({ message: "That product was not found." });
+  }
+  return res.json(foundProduct);
+});
 
-    if(priceP){
-        searchItems = searchItems.filter((product) => {
-            return product.price < Number(priceP);
-        })
-    }
-    return res.status(200).json(searchItems)
-})
+app.get("/api/v1/query", (req, res) => {
+  console.log(req.query);
+  const { search, limit, priceP } = req.query;
+  let searchItems = [...products];
 
-app.all('*', (req, res) => {
-    res.status(404).send('<h1>The page not found</h1>')
-})
+  if (search) {
+    searchItems = searchItems.filter((product) => {
+      return product.name.startsWith(search);
+    });
+  }
+
+  if (limit) {
+    searchItems = searchItems.slice(0, Number(limit));
+  }
+
+  if (priceP) {
+    searchItems = searchItems.filter((product) => {
+      return product.price < Number(priceP);
+    });
+  }
+  return res.status(200).json(searchItems);
+});
+
+// app.get("/api/v1/people", (req, res) => {
+//     console.log("Get request for People");
+//     // const newPerson = people.map((person) => {
+//     //   return { ...person };
+//     // });
+//     res.status(200).json({data:people});
+//   });
+
+// //adding person
+// app.post("/api/v1/people", (req, res) => {
+//     //const {name} = req.body;
+//     if (!req.body.name){
+//         return res.status(400)
+//         .json({ success: false, message: "Please provide a name" });
+//     }
+//     people.push({ id: people.length + 1, name: req.body.name });
+//     res.status(201).json({ success: true, name: req.body.name });
+//   });
+
+app.all("*", (req, res) => {
+  res.status(404).send("<h1>The page is not found</h1>");
+});
 
 const port = 3000;
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`)
-})
+  console.log(`Server is running on port ${port}`);
+});
