@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const tasks = require("./routs/tasks");
 const connectDB = require("./db/connect");
-require('dotenv').config()
+require("dotenv").config();
 
 //middleware
 app.use(express.json()); //to parse the incoming request body in middleware
@@ -18,12 +18,12 @@ app.post("/api/v1/tasks", tasks); //create a new tast
 //update tasks
 app.get("/api/v1/tasks/:id", (req, res) => {});
 
-const port = 3000;
+PORT = process.env.PORT || 3000;
 
 const start = async () => {
   try {
     await connectDB(process.env.MANGO_URI);
-    app.listen(port, console.log(`server is listening on port ${port}`));
+    app.listen(PORT, console.log(`Server is listening on port ${PORT}`));
   } catch (error) {
     console.log(error);
   }
